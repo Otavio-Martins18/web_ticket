@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sistema de Atendimento - Painel Central</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e6e6e6;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1 {
+      text-align: center;
+      margin: 40px 0 30px 0;
+      color: #1a237e;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .painel-centro {
+      width: 95%;
+      max-width: 1270px;
+      margin: auto;
+      background: white;
+      padding: 35px;
+      border-radius: 14px;
+      box-shadow: 0px 5px 16px rgba(0, 0, 0, 0.25);
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .painel-centro h2 {
+      font-size: 28px;
+      color: #1a237e;
+      margin-bottom: 20px;
+    }
+
+    .ultima-senha {
+      font-size: 26px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .lista-senhas {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    .painel-item {
+      background: #f7f7f7;
+      border-radius: 10px;
+      padding: 18px;
+      font-size: 20px;
+      border: 1px solid #ccc;
+      font-weight: bold;
+    }
+
+    .painel-item strong {
+      color: #1a237e;
+      font-size: 22px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding-bottom: 40px;
+    }
+
+    .box {
+      background: rgb(255, 255, 255);
+      padding: 25px;
+      width: 380px;
+      border-radius: 20px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      transition: 0.2s;
+    }
+
+    .box:hover {
+      transform: scale(1.01);
+    }
+
+    h2 {
+      color: #1a237e;
+      margin-bottom: 15px;
+      font-size: 22px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 12px;
+      border: none;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: 0.2s;
+    }
+
+    .sp {
+      background: #c62828;
+    }
+
+    .sp:hover {
+      background: #8e0000;
+    }
+
+    .sg {
+      background: #1565c0;
+    }
+
+    .sg:hover {
+      background: #0d47a1;
+    }
+
+    .se {
+      background: #2e7d32;
+    }
+
+    .se:hover {
+      background: #1b5e20;
+    }
+
+    .call {
+      background: #ef6c00;
+    }
+
+    .call:hover {
+      background: #e65100;
+    }
+
+    footer {
+      padding: 20px;
+      background: #1a237e;
+      color: white;
+      text-align: center;
+      font-size: 14px;
+      letter-spacing: 1px;
+      margin-top: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Sistema de Controle de Atendimento</h1>
+
+  <div class="container">
+
+    <!-- TOTEM -->
+    <div class="box">
+      <h2>Totem de Senhas</h2>
+
+      <button class="sp">Emitir Prioritária (SP)</button>
+      <button class="sg">Emitir Geral (SG)</button>
+      <button class="se">Emitir Exames (SE)</button>
+
+      <p style="margin-top:20px; font-weight:bold; color:#444;">
+        Última senha:<br> <strong id="ultima-senha-totem">Clique para emitir...</strong>
+      </p>
+      <p>Fila SP: <strong id="fila-sp">0</strong></p>
+      <p>Fila SG: <strong id="fila-sg">0</strong></p>
+      <p>Fila SE: <strong id="fila-se">0</strong></p>
+      <p>Total Emitidas: <strong id="cont-emitidas">0</strong></p>
+    </div>
+
+    <!-- GUICHÊ 01 -->
+    <div class="box">
+      <h2>Atendente (Guichê 01)</h2>
+
+      <p>Guichê Atual: <strong>01</strong></p>
+      <p>Status: <strong id="status-atendente-01" style="color:green;">Livre</strong></p>
+
+      <button class="call" id="btn-call-01">Chamar Próximo</button>
+
+      <p style="margin-top:20px; font-weight:bold; font-size:20px; color:#444;">
+        Chamando agora:<br> <strong id="chamando-agora-01">Aguardando...</strong>
+      </p>
+
+      <p>Atendidas: <strong id="cont-atendidas-01">0</strong></p>
+    </div>
+
+    <!-- GUICHÊ 03 -->
+    <div class="box">
+      <h2>Atendente (Guichê 03)</h2>
+
+      <p>Guichê Atual: <strong>03</strong></p>
+      <p>Status: <strong id="status-atendente-03" style="color:green;">Livre</strong></p>
+
+      <button class="call" id="btn-call-03">Chamar Próximo</button>
+
+      <p style="margin-top:20px; font-weight:bold; font-size:20px; color:#444;">
+        Chamando agora:<br> <strong id="chamando-agora-03">Aguardando...</strong>
+      </p>
+
+      <p>Atendidas: <strong id="cont-atendidas-03">0</strong></p>
+    </div>
+
+  </div>
+
+  <!-- PAINEL CENTRAL -->
+  <div class="painel-centro">
+    <h2>Painel Principal</h2>
+
+    <div class="ultima-senha">
+      Última chamada: <span id="ultima-chamada-painel" style="color:#1a237e;">Aguardando chamada...</span>
+    </div>
+
+    <h3 style="margin-top:20px; color:#444; font-size:22px;">Últimas 6 senhas</h3>
+
+    <div class="lista-senhas" id="lista-senhas-painel"></div>
+  </div>
+  <br><br>
+  <footer>
+    Sistema de Controle de Atendimento • Projeto Acadêmico • 2025
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+
+      const PADRAO = {
+        contadores: { SP: 2026, SG: 5521, SE: 1189 },
+        fila: { SP: [], SG: [], SE: [] },
+        emitidas: 0,
+        painelHistorico: [],
+        guiches: {
+          "01": { atendidas: 0, chamando: "Aguardando..." },
+          "03": { atendidas: 0, chamando: "Aguardando..." }
+        }
+      };
+
+      const loadState = () =>
+        JSON.parse(localStorage.getItem("atendimentoState")) || PADRAO;
+
+      let state = loadState();
+
+      const saveState = () =>
+        localStorage.setItem("atendimentoState", JSON.stringify(state));
+
+      const ultimaSenhaTotem = document.getElementById("ultima-senha-totem");
+      const filaSPDisplay = document.getElementById("fila-sp");
+      const filaSGDisplay = document.getElementById("fila-sg");
+      const filaSEDisplay = document.getElementById("fila-se");
+      const contEmitidasDisplay = document.getElementById("cont-emitidas");
+
+      const ultimaChamadaPainel = document.getElementById("ultima-chamada-painel");
+      const listaPainel = document.getElementById("lista-senhas-painel");
+
+      // Carregar histórico no painel
+      listaPainel.innerHTML = state.painelHistorico
+        .map(
+          (item) =>
+            <div class="painel-item">${item.senha}<br>Guichê <strong>${item.guiche}</strong></div>
+        )
+        .join("");
+
+      if (state.painelHistorico.length > 0) {
+        const primeiro = state.painelHistorico[0];
+        ultimaChamadaPainel.textContent = ${primeiro.senha} • Guichê ${primeiro.guiche};
+      }
+
+      class Guiche {
+        constructor(id) {
+          this.id = id;
+          this.btnCall = document.getElementById(btn-call-${id});
+          this.status = document.getElementById(status-atendente-${id});
+          this.chamando = document.getElementById(chamando-agora-${id});
+          this.atendidas = document.getElementById(cont-atendidas-${id});
+          this.init();
+        }
+
+        init() {
+          this.atendidas.textContent = state.guiches[this.id].atendidas;
+          this.chamando.textContent = state.guiches[this.id].chamando;
+
+          this.btnCall.addEventListener("click", () => this.chamarProximo());
+        }
+
+        chamarProximo() {
+          if (this.status.textContent !== "Livre") {
+            alert(O Guichê ${this.id} está ocupado!);
+            return;
+          }
+
+          let tipo = null;
+
+          if (state.fila.SP.length) tipo = "SP";
+          else if (state.fila.SG.length) tipo = "SG";
+          else if (state.fila.SE.length) tipo = "SE";
+
+          if (!tipo) {
+            alert("Não há senhas na fila!");
+            this.chamando.textContent = "Aguardando...";
+            return;
+          }
+
+          const senha = state.fila[tipo].shift();
+
+          state.guiches[this.id].atendidas++;
+          state.guiches[this.id].chamando = ${senha} • Guichê ${this.id};
+
+          this.status.textContent = "Ocupado";
+          this.status.style.color = "red";
+          this.chamando.textContent = state.guiches[this.id].chamando;
+          this.atendidas.textContent = state.guiches[this.id].atendidas;
+
+          ultimaChamadaPainel.textContent = ${senha} • Guichê ${this.id};
+          adicionarAoPainel(senha, this.id);
+
+          atualizarFilas();
+          saveState();
+
+          setTimeout(() => {
+            this.status.textContent = "Livre";
+            this.status.style.color = "green";
+            saveState();
+          }, 3000);
+        }
+      }
+
+      new Guiche("01");
+      new Guiche("03");
+
+      function atualizarFilas() {
+        filaSPDisplay.textContent = state.fila.SP.length;
+        filaSGDisplay.textContent = state.fila.SG.length;
+        filaSEDisplay.textContent = state.fila.SE.length;
+        contEmitidasDisplay.textContent = state.emitidas;
+      }
+
+      function adicionarAoPainel(senha, guiche) {
+        const item = document.createElement("div");
+        item.className = "painel-item";
+        item.innerHTML = ${senha}<br>Guichê <strong>${guiche}</strong>;
+        listaPainel.prepend(item);
+
+        state.painelHistorico.unshift({ senha, guiche });
+
+        while (listaPainel.children.length > 6)
+          listaPainel.removeChild(listaPainel.lastChild);
+
+        while (state.painelHistorico.length > 6)
+          state.painelHistorico.pop();
+
+        saveState();
+      }
+
+      function emitirSenha(tipo, guicheDefault) {
+        state.contadores[tipo]++;
+        state.emitidas++;
+
+        const senha = ${tipo}-${state.contadores[tipo]};
+        state.fila[tipo].push(senha);
+
+        ultimaSenhaTotem.innerHTML = ${senha} • Sugestão: <strong>${guicheDefault}</strong>;
+
+        atualizarFilas();
+        saveState();
+      }
+
+      document.querySelector(".sp").onclick = () =>
+        emitirSenha("SP", "03");
+
+      document.querySelector(".sg").onclick = () =>
+        emitirSenha("SG", "02");
+
+      document.querySelector(".se").onclick = () =>
+        emitirSenha("SE", "01");
+
+      atualizarFilas();
+    });
+  </script>
+
+</body>
+
+</html>
