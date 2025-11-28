@@ -2,9 +2,10 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Sistema de Atendimento - Painel Central</title>
 
+  <!-- SEU CSS ORIGINAL 100% IGUAL -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -158,230 +159,193 @@
 
   <h1>Sistema de Controle de Atendimento</h1>
 
-  <div class="container">
-
-    <!-- TOTEM -->
-    <div class="box">
-      <h2>Totem de Senhas</h2>
-
-      <button class="sp">Emitir Prioritária (SP)</button>
-      <button class="sg">Emitir Geral (SG)</button>
-      <button class="se">Emitir Exames (SE)</button>
-
-      <p style="margin-top:20px; font-weight:bold; color:#444;">
-        Última senha:<br> <strong id="ultima-senha-totem">Clique para emitir...</strong>
-      </p>
-      <p>Fila SP: <strong id="fila-sp">0</strong></p>
-      <p>Fila SG: <strong id="fila-sg">0</strong></p>
-      <p>Fila SE: <strong id="fila-se">0</strong></p>
-      <p>Total Emitidas: <strong id="cont-emitidas">0</strong></p>
-    </div>
-
-    <!-- GUICHÊ 01 -->
-    <div class="box">
-      <h2>Atendente (Guichê 01)</h2>
-
-      <p>Guichê Atual: <strong>01</strong></p>
-      <p>Status: <strong id="status-atendente-01" style="color:green;">Livre</strong></p>
-
-      <button class="call" id="btn-call-01">Chamar Próximo</button>
-
-      <p style="margin-top:20px; font-weight:bold; font-size:20px; color:#444;">
-        Chamando agora:<br> <strong id="chamando-agora-01">Aguardando...</strong>
-      </p>
-
-      <p>Atendidas: <strong id="cont-atendidas-01">0</strong></p>
-    </div>
-
-    <!-- GUICHÊ 03 -->
-    <div class="box">
-      <h2>Atendente (Guichê 03)</h2>
-
-      <p>Guichê Atual: <strong>03</strong></p>
-      <p>Status: <strong id="status-atendente-03" style="color:green;">Livre</strong></p>
-
-      <button class="call" id="btn-call-03">Chamar Próximo</button>
-
-      <p style="margin-top:20px; font-weight:bold; font-size:20px; color:#444;">
-        Chamando agora:<br> <strong id="chamando-agora-03">Aguardando...</strong>
-      </p>
-
-      <p>Atendidas: <strong id="cont-atendidas-03">0</strong></p>
-    </div>
-
-  </div>
-
-  <!-- PAINEL CENTRAL -->
-  <div class="painel-centro">
-    <h2>Painel Principal</h2>
-
-    <div class="ultima-senha">
-      Última chamada: <span id="ultima-chamada-painel" style="color:#1a237e;">Aguardando chamada...</span>
-    </div>
-
-    <h3 style="margin-top:20px; color:#444; font-size:22px;">Últimas 6 senhas</h3>
-
-    <div class="lista-senhas" id="lista-senhas-painel"></div>
-  </div>
-  <br><br>
+  <div id="root"></div>
+  <br><br><br>
   <footer>
     Sistema de Controle de Atendimento • Projeto Acadêmico • 2025
   </footer>
 
-  <script>
-    document.addEventListener("DOMContentLoaded", () => {
+  <!-- React + ReactDOM + Babel -->
+  <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-      const PADRAO = {
-        contadores: { SP: 2026, SG: 5521, SE: 1189 },
-        fila: { SP: [], SG: [], SE: [] },
-        emitidas: 0,
-        painelHistorico: [],
-        guiches: {
-          "01": { atendidas: 0, chamando: "Aguardando..." },
-          "03": { atendidas: 0, chamando: "Aguardando..." }
-        }
+  <!-- Bootstrap -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- CÓDIGO REACT -->
+  <script type="text/babel">
+
+    const PADRAO = {
+      contadores: { SP: 2026, SG: 5521, SE: 1189 },
+      fila: { SP: [], SG: [], SE: [] },
+      emitidas: 0,
+      painelHistorico: [],
+      guiches: {
+        "01": { atendidas: 0, chamando: "Aguardando..." },
+        "03": { atendidas: 0, chamando: "Aguardando..." }
+      }
+    };
+
+    const loadState = () =>
+      JSON.parse(localStorage.getItem("atendimentoState")) || PADRAO;
+
+    const saveState = (state) =>
+      localStorage.setItem("atendimentoState", JSON.stringify(state));
+
+    function App() {
+      const [state, setState] = React.useState(loadState());
+
+      const atualizar = (novo) => {
+        setState(novo);
+        saveState(novo);
       };
 
-      const loadState = () =>
-        JSON.parse(localStorage.getItem("atendimentoState")) || PADRAO;
+      const emitirSenha = (tipo, guicheDefault) => {
+        const novo = { ...state };
 
-      let state = loadState();
+        novo.contadores[tipo]++;
+        novo.emitidas++;
 
-      const saveState = () =>
-        localStorage.setItem("atendimentoState", JSON.stringify(state));
+        const senha = `${tipo}-${novo.contadores[tipo]}`;
+        novo.fila[tipo].push(senha);
 
-      const ultimaSenhaTotem = document.getElementById("ultima-senha-totem");
-      const filaSPDisplay = document.getElementById("fila-sp");
-      const filaSGDisplay = document.getElementById("fila-sg");
-      const filaSEDisplay = document.getElementById("fila-se");
-      const contEmitidasDisplay = document.getElementById("cont-emitidas");
+        novo.ultimaSenha = `${senha} (Sugestão: ${guicheDefault})`;
 
-      const ultimaChamadaPainel = document.getElementById("ultima-chamada-painel");
-      const listaPainel = document.getElementById("lista-senhas-painel");
+        atualizar(novo);
+      };
 
-      // Carregar histórico no painel
-      listaPainel.innerHTML = state.painelHistorico
-        .map(
-          (item) =>
-            <div class="painel-item">${item.senha}<br>Guichê <strong>${item.guiche}</strong></div>
-        )
-        .join("");
+      const chamar = (id) => {
+        const novo = { ...state };
+        const g = novo.guiches[id];
 
-      if (state.painelHistorico.length > 0) {
-        const primeiro = state.painelHistorico[0];
-        ultimaChamadaPainel.textContent = ${primeiro.senha} • Guichê ${primeiro.guiche};
-      }
+        if (g.ocupado) return alert(`O Guichê ${id} está ocupado!`);
 
-      class Guiche {
-        constructor(id) {
-          this.id = id;
-          this.btnCall = document.getElementById(btn-call-${id});
-          this.status = document.getElementById(status-atendente-${id});
-          this.chamando = document.getElementById(chamando-agora-${id});
-          this.atendidas = document.getElementById(cont-atendidas-${id});
-          this.init();
+        let tipo = null;
+        if (novo.fila.SP.length) tipo = "SP";
+        else if (novo.fila.SG.length) tipo = "SG";
+        else if (novo.fila.SE.length) tipo = "SE";
+
+        if (!tipo) {
+          g.chamando = "Aguardando...";
+          atualizar(novo);
+          return alert("Não há senhas!");
         }
 
-        init() {
-          this.atendidas.textContent = state.guiches[this.id].atendidas;
-          this.chamando.textContent = state.guiches[this.id].chamando;
+        const senha = novo.fila[tipo].shift();
 
-          this.btnCall.addEventListener("click", () => this.chamarProximo());
-        }
+        g.atendidas++;
+        g.chamando = `${senha} • Guichê ${id}`;
+        g.ocupado = true;
 
-        chamarProximo() {
-          if (this.status.textContent !== "Livre") {
-            alert(O Guichê ${this.id} está ocupado!);
-            return;
-          }
+        novo.ultimaChamada = g.chamando;
 
-          let tipo = null;
+        novo.painelHistorico.unshift({ senha, guiche: id });
+        if (novo.painelHistorico.length > 6) novo.painelHistorico.pop();
 
-          if (state.fila.SP.length) tipo = "SP";
-          else if (state.fila.SG.length) tipo = "SG";
-          else if (state.fila.SE.length) tipo = "SE";
+        atualizar(novo);
 
-          if (!tipo) {
-            alert("Não há senhas na fila!");
-            this.chamando.textContent = "Aguardando...";
-            return;
-          }
+        setTimeout(() => {
+          const finish = { ...novo };
+          finish.guiches[id].ocupado = false;
+          atualizar(finish);
+        }, 3000);
+      };
 
-          const senha = state.fila[tipo].shift();
+      return (
+        <>
+          <div className="container">
 
-          state.guiches[this.id].atendidas++;
-          state.guiches[this.id].chamando = ${senha} • Guichê ${this.id};
+            {/* TOTEM */}
+            <div className="box">
+              <h2>Totem de Senhas</h2>
 
-          this.status.textContent = "Ocupado";
-          this.status.style.color = "red";
-          this.chamando.textContent = state.guiches[this.id].chamando;
-          this.atendidas.textContent = state.guiches[this.id].atendidas;
+              <button className="sp" onClick={() => emitirSenha("SP", "03")}>Emitir Prioritária (SP)</button>
+              <button className="sg" onClick={() => emitirSenha("SG", "02")}>Emitir Geral (SG)</button>
+              <button className="se" onClick={() => emitirSenha("SE", "01")}>Emitir Exames (SE)</button>
 
-          ultimaChamadaPainel.textContent = ${senha} • Guichê ${this.id};
-          adicionarAoPainel(senha, this.id);
+              <p style={{ marginTop: 20, fontWeight: "bold", color: "#444" }}>
+                Última senha:<br />
+                <strong>{state.ultimaSenha || "Clique para emitir..."}</strong>
+              </p>
 
-          atualizarFilas();
-          saveState();
+              <p>Fila SP: <strong>{state.fila.SP.length}</strong></p>
+              <p>Fila SG: <strong>{state.fila.SG.length}</strong></p>
+              <p>Fila SE: <strong>{state.fila.SE.length}</strong></p>
+              <p>Total Emitidas: <strong>{state.emitidas}</strong></p>
+            </div>
 
-          setTimeout(() => {
-            this.status.textContent = "Livre";
-            this.status.style.color = "green";
-            saveState();
-          }, 3000);
-        }
-      }
+            {/* GUICHÊ 01 */}
+            <div className="box">
+              <h2>Atendente (Guichê 01)</h2>
+              <p>Guichê Atual: <strong>01</strong></p>
 
-      new Guiche("01");
-      new Guiche("03");
+              <p>Status:
+                <strong style={{ color: state.guiches["01"].ocupado ? "red" : "green" }}>
+                  {state.guiches["01"].ocupado ? "Ocupado" : "Livre"}
+                </strong>
+              </p>
 
-      function atualizarFilas() {
-        filaSPDisplay.textContent = state.fila.SP.length;
-        filaSGDisplay.textContent = state.fila.SG.length;
-        filaSEDisplay.textContent = state.fila.SE.length;
-        contEmitidasDisplay.textContent = state.emitidas;
-      }
+              <button className="call" onClick={() => chamar("01")}>Chamar Próximo</button>
 
-      function adicionarAoPainel(senha, guiche) {
-        const item = document.createElement("div");
-        item.className = "painel-item";
-        item.innerHTML = ${senha}<br>Guichê <strong>${guiche}</strong>;
-        listaPainel.prepend(item);
+              <p style={{ marginTop: 20, fontWeight: "bold", fontSize: 20 }}>
+                Chamando agora:<br />
+                <strong>{state.guiches["01"].chamando}</strong>
+              </p>
 
-        state.painelHistorico.unshift({ senha, guiche });
+              <p>Atendidas: <strong>{state.guiches["01"].atendidas}</strong></p>
+            </div>
 
-        while (listaPainel.children.length > 6)
-          listaPainel.removeChild(listaPainel.lastChild);
+            {/* GUICHÊ 03 */}
+            <div className="box">
+              <h2>Atendente (Guichê 03)</h2>
+              <p>Guichê Atual: <strong>03</strong></p>
 
-        while (state.painelHistorico.length > 6)
-          state.painelHistorico.pop();
+              <p>Status:
+                <strong style={{ color: state.guiches["03"].ocupado ? "red" : "green" }}>
+                  {state.guiches["03"].ocupado ? "Ocupado" : "Livre"}
+                </strong>
+              </p>
 
-        saveState();
-      }
+              <button className="call" onClick={() => chamar("03")}>Chamar Próximo</button>
 
-      function emitirSenha(tipo, guicheDefault) {
-        state.contadores[tipo]++;
-        state.emitidas++;
+              <p style={{ marginTop: 20, fontWeight: "bold", fontSize: 20 }}>
+                Chamando agora:<br />
+                <strong>{state.guiches["03"].chamando}</strong>
+              </p>
 
-        const senha = ${tipo}-${state.contadores[tipo]};
-        state.fila[tipo].push(senha);
+              <p>Atendidas: <strong>{state.guiches["03"].atendidas}</strong></p>
+            </div>
+          </div>
 
-        ultimaSenhaTotem.innerHTML = ${senha} • Sugestão: <strong>${guicheDefault}</strong>;
+          {/* PAINEL */}
+          <div className="painel-centro">
+            <h2>Painel Principal</h2>
 
-        atualizarFilas();
-        saveState();
-      }
+            <div className="ultima-senha">
+              Última chamada:
+              <span style={{ color: "#1a237e", marginLeft: 8 }}>
+                {state.ultimaChamada || "Aguardando chamada..."}
+              </span>
+            </div>
 
-      document.querySelector(".sp").onclick = () =>
-        emitirSenha("SP", "03");
+            <h3 style={{ marginTop: 20, color: "#444", fontSize: 22 }}>Últimas 6 senhas</h3>
 
-      document.querySelector(".sg").onclick = () =>
-        emitirSenha("SG", "02");
+            <div className="lista-senhas">
+              {state.painelHistorico.map((item, index) => (
+                <div className="painel-item" key={index}>
+                  {item.senha}<br />
+                  Guichê <strong>{item.guiche}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      );
+    }
 
-      document.querySelector(".se").onclick = () =>
-        emitirSenha("SE", "01");
-
-      atualizarFilas();
-    });
+    ReactDOM.render(<App />, document.getElementById("root"));
   </script>
 
 </body>
